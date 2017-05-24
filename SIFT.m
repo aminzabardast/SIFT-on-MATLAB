@@ -7,25 +7,43 @@ function D = SIFT(inputImage)
     Sigmas = sigmas(Octaves,Scales);
     G = cell(1,Octaves); % Gaussians
     D = cell(1,Octaves); % DoG
+    P = cell(1,Octaves); % Key Points
     %% Calculating Gaussians
-    for i=1:Octaves
+    for o=1:Octaves
         [row,col] = size(inputImage);
         temp = zeros([row,col,Scales]);
-        for j=1:Scales
-            temp(:,:,j) = imgaussfilt(inputImage,Sigmas(i,j));
+        for s=1:Scales
+            temp(:,:,s) = imgaussfilt(inputImage,Sigmas(o,s));
         end
-        G(i) = {temp};
+        G(o) = {temp};
         inputImage = inputImage(2:2:end,2:2:end);
     end
     %% Calculating DoG
-    for i=1:Octaves
-        images = cell2mat(G(i));
+    for o=1:Octaves
+        images = cell2mat(G(o));
         [row,col,Scales] = size(images);
         temp = zeros([row,col,Scales-1]);
-        for j=1:Scales-1
-            temp(:,:,j) = images(:,:,j+1) - images(:,:,j);
+        for s=1:Scales-1
+            temp(:,:,s) = images(:,:,s+1) - images(:,:,s);
         end
-        D(i) = {temp};
+        D(o) = {temp};
+    end
+    %% Extracting Key Points
+    for o=1:Octaves
+        images = cell2mat(D(o));
+        [row,col,Scales] = size(images);
+        temp = zeros([row,col,Scales-2]);
+        for s=2:Scales-1
+            for y=2:col-1
+                for x=2:row-1
+                    sub = images(x-1:x+1,y-1:y+1,s-1:s+1);
+                    if sub(2,2,2) > max([sub(1:13),sub(15:end)]) || sub(2,2,2) < min([sub(1:13),sub(15:end)])
+                        temp(x,y,s-1) = 1;
+                    end
+                end
+            end
+        end
+        P(o) = {temp};
     end
 end
 
