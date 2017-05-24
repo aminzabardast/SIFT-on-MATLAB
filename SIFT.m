@@ -1,4 +1,4 @@
-function D = SIFT(inputImage)
+function P = SIFT(inputImage)
 % This function is to extract sift features from a given image
     
     %% Setting Variables.
