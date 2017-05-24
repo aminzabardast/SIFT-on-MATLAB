@@ -1,4 +1,4 @@
-function G = SIFT(inputImage)
+function D = SIFT(inputImage)
 % This function is to extract sift features from a given image
     
     %% Setting Variables.
@@ -6,6 +6,7 @@ function G = SIFT(inputImage)
     Scales = 5;
     Sigmas = sigmas(Octaves,Scales);
     G = cell(1,Octaves); % Gaussians
+    D = cell(1,Octaves); % DoG
     %% Calculating Gaussians
     for i=1:Octaves
         [row,col] = size(inputImage);
@@ -15,6 +16,16 @@ function G = SIFT(inputImage)
         end
         G(i) = {temp};
         inputImage = inputImage(2:2:end,2:2:end);
+    end
+    %% Calculating DoG
+    for i=1:Octaves
+        images = cell2mat(G(i));
+        [row,col,Scales] = size(images);
+        temp = zeros([row,col,Scales-1]);
+        for j=1:Scales-1
+            temp(:,:,j) = images(:,:,j+1) - images(:,:,j);
+        end
+        D(i) = {temp};
     end
 end
 
