@@ -7,7 +7,7 @@ function P = SIFT(inputImage)
     Sigmas = sigmas(Octaves,Scales);
     G = cell(1,Octaves); % Gaussians
     D = cell(1,Octaves); % DoG
-    P = cell(1,Octaves); % Key Points
+    P = []; % Key Points
     %% Calculating Gaussians
     for o=1:Octaves
         [row,col] = size(inputImage);
@@ -38,12 +38,13 @@ function P = SIFT(inputImage)
                 for x=2:row-1
                     sub = images(x-1:x+1,y-1:y+1,s-1:s+1);
                     if sub(2,2,2) > max([sub(1:13),sub(15:end)]) || sub(2,2,2) < min([sub(1:13),sub(15:end)])
-                        temp(x,y,s-1) = 1;
+                        Px = x*2^(o-1);
+                        Py = y*2^(o-1);
+                        P = [P,Px,Py];
                     end
                 end
             end
         end
-        P(o) = {temp};
     end
 end
 
