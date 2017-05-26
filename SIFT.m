@@ -2,9 +2,12 @@ function P = SIFT(inputImage)
 % This function is to extract sift features from a given image
     
     %% Setting Variables.
+    OriginalImage = inputImage;
     Octaves = 4;
     Scales = 5;
     Sigmas = sigmas(Octaves,Scales);
+    ContrastThreshhold = 1;
+    rCurvature = 10;
     G = cell(1,Octaves); % Gaussians
     D = cell(1,Octaves); % DoG
     P = []; % Key Points
@@ -40,6 +43,20 @@ function P = SIFT(inputImage)
                     if sub(2,2,2) > max([sub(1:13),sub(15:end)]) || sub(2,2,2) < min([sub(1:13),sub(15:end)])
                         Px = x*2^(o-1);
                         Py = y*2^(o-1);
+                        % Getting rid of bad Key Points
+                        if abs(OriginalImage(Px,Py)) < ContrastThreshhold
+                            continue
+                        else
+                            fxx = OriginalImage(Px-1,Py)+OriginalImage(Px+1,Py)-2*OriginalImage(Px,Py);
+                            fyy = OriginalImage(Px,Py-1)+OriginalImage(Px,Py+1)-2*OriginalImage(Px,Py);
+                            fxy = OriginalImage(Px-1,Py-1)+OriginalImage(Px+1,Py+1)-OriginalImage(Px-1,Py+1)-OriginalImage(Px+1,Py-1);
+                            trace = fxx+fyy;
+                            determinant = fxx*fyy-fxy*fxy;
+                            curvature = trace*trace/determinant;
+                            if curvature > (rCurvature+1)^2/rCurvature
+                                continue
+                            end
+                        end
                         P = [P,Px,Py];
                     end
                 end
