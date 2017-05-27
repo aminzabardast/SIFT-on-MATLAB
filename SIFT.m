@@ -1,4 +1,4 @@
-function P = SIFT(inputImage, Octaves, Scales,Sigma)
+function P = SIFT(inputImage, Octaves, Scales, Sigma)
 % This function is to extract sift features from a given image
     
     %% Setting Variables.
