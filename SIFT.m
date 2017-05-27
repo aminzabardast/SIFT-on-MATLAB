@@ -1,12 +1,10 @@
-function P = SIFT(inputImage)
+function P = SIFT(inputImage, Octaves, Scales,Sigma)
 % This function is to extract sift features from a given image
     
     %% Setting Variables.
     OriginalImage = inputImage;
-    Octaves = 4;
-    Scales = 5;
-    Sigmas = sigmas(Octaves,Scales);
-    ContrastThreshhold = 1;
+    Sigmas = sigmas(Octaves,Scales,Sigma);
+    ContrastThreshhold = 7.68;
     rCurvature = 10;
     G = cell(1,Octaves); % Gaussians
     D = cell(1,Octaves); % DoG
@@ -35,7 +33,6 @@ function P = SIFT(inputImage)
     for o=1:Octaves
         images = cell2mat(D(o));
         [row,col,Scales] = size(images);
-        temp = zeros([row,col,Scales-2]);
         for s=2:Scales-1
             for y=2:col-1
                 for x=2:row-1
@@ -65,14 +62,13 @@ function P = SIFT(inputImage)
     end
 end
 
-function matrix = sigmas(octave,scale)
+function matrix = sigmas(octave,scale,sigma)
 % Function to calculate Sigma values for different Gaussians
     matrix = zeros(octave,scale);
     k = sqrt(2);
-    Sigma = sqrt(2);
     for i=1:octave
         for j=1:scale
-            matrix(i,j) = i*k^(j-1)*Sigma;
+            matrix(i,j) = i*k^(j-1)*sigma;
         end
     end
 end
