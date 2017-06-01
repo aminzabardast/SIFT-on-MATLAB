@@ -38,17 +38,19 @@ function P = SIFT(inputImage, Octaves, Scales, Sigma)
                 for x=2:row-1
                     sub = images(x-1:x+1,y-1:y+1,s-1:s+1);
                     if sub(2,2,2) > max([sub(1:13),sub(15:end)]) || sub(2,2,2) < min([sub(1:13),sub(15:end)])
+                        % TODO: Interpolation for X and Y value to get
+                        % subpixel accuracy.
                         Px = x*2^(o-1);
                         Py = y*2^(o-1);
                         % Getting rid of bad Key Points
-                        if abs(OriginalImage(Px,Py)) < ContrastThreshhold
+                        if abs(sub(2,2,2)) < ContrastThreshhold
                             continue
                         else
-                            fxx = OriginalImage(Px-1,Py)+OriginalImage(Px+1,Py)-2*OriginalImage(Px,Py);
-                            fyy = OriginalImage(Px,Py-1)+OriginalImage(Px,Py+1)-2*OriginalImage(Px,Py);
-                            fxy = OriginalImage(Px-1,Py-1)+OriginalImage(Px+1,Py+1)-OriginalImage(Px-1,Py+1)-OriginalImage(Px+1,Py-1);
-                            trace = fxx+fyy;
-                            determinant = fxx*fyy-fxy*fxy;
+                            Dxx = sub(1,2,2)+sub(3,2,2)-2*sub(2,2,2);
+                            Dyy = sub(2,1,2)+sub(2,3,2)-2*sub(2,2,2);
+                            Dxy = sub(1,1,2)+sub(3,3,2)-2*sub(1,3,2)-2*sub(3,1,2);
+                            trace = Dxx+Dyy;
+                            determinant = Dxx*Dyy-Dxy*Dxy;
                             curvature = trace*trace/determinant;
                             if curvature > (rCurvature+1)^2/rCurvature
                                 continue
