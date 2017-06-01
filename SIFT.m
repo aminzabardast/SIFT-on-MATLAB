@@ -9,6 +9,7 @@ function P = SIFT(inputImage, Octaves, Scales, Sigma)
     G = cell(1,Octaves); % Gaussians
     D = cell(1,Octaves); % DoG
     P = []; % Key Points
+
     %% Calculating Gaussians
     for o=1:Octaves
         [row,col] = size(inputImage);
@@ -19,6 +20,7 @@ function P = SIFT(inputImage, Octaves, Scales, Sigma)
         G(o) = {temp};
         inputImage = inputImage(2:2:end,2:2:end);
     end
+
     %% Calculating DoG
     for o=1:Octaves
         images = cell2mat(G(o));
@@ -29,6 +31,7 @@ function P = SIFT(inputImage, Octaves, Scales, Sigma)
         end
         D(o) = {temp};
     end
+
     %% Extracting Key Points
     for o=1:Octaves
         images = cell2mat(D(o));
