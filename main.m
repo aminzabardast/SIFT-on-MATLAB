@@ -11,6 +11,9 @@ for i=1:4:length(result)
     original = insertShape(original,'line'...
         ,[result(i+1),result(i),result(i+1)+result(i+3)*sin(result(i+2)),result(i)+result(i+3)*cos(result(i+2))],...
         'LineWidth',1,'color',[255,0,0]);
+end
+for i=1:4:length(result)
+    % Distinguishing key point location with green dots
     original(result(i),result(i+1),:) = [0,255,0];
 end
 figure
