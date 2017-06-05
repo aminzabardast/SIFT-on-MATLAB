@@ -62,21 +62,19 @@ function P = SIFT(inputImage, Octaves, Scales, Sigma)
                             end
                         end
                         %% Calculating orientation and magnitute of pixels at key point vicinity
-                        % Pixel radius for extractin orientation
-                        xLow = x-OrientationCalculationRadius;
-                        xHigh = x+OrientationCalculationRadius;
-                        yLow = y-OrientationCalculationRadius;
-                        yHigh = y+OrientationCalculationRadius;
-                        %% Create the orientation histogram
+                        % Weight for gradient vectors
+                        weights = gaussianKernel(1.5*Sigmas(o,s));
+                        radius = (length(weights)-1)/2;
+                        [wRows,wCols] = size(weights);
                         % 36 bin histogram.
                         gHist = zeros(1,36);
-                        for i = 0:xHigh-xLow
-                            for j = 0:yHigh-yLow
+                        for i = 1:wRows
+                            for j = 1:wCols
                                 % Converting orientation calculation window
                                 % coordinate to image coordinate /
                                 % translating coordinate
-                                imageX = xLow+i;
-                                imageY = yLow+j;
+                                imageX = x-radius-1+i;
+                                imageY = y-radius-1+j;
                                 % Making sure index will not fall outside
                                 % of Image
                                 if imageX <= 1 || imageX >= row
@@ -89,21 +87,21 @@ function P = SIFT(inputImage, Octaves, Scales, Sigma)
                                 tempOrientation = atan3d(gaussians(imageX,imageY+1,s)-gaussians(imageX,imageY-1,s), gaussians(imageX+1,imageY,s)-gaussians(imageX-1,imageY,s));
                                 tempMagnitute = ((gaussians(imageX+1,imageY,s)-gaussians(imageX-1,imageY,s))^2+(gaussians(imageX,imageY+1,s)-gaussians(imageX,imageY-1,s))^2)^0.5;
                                 bin = floor(tempOrientation/10)+1;
-                                gHist(bin) =+ tempMagnitute;
+                                gHist(bin) =+ tempMagnitute*weights(i,j);
                             end
                         end
                         %% Choosing keypoint
                         orientationThreshold = max(gHist(:))*4/5;
                         for i=1:length(gHist)
-                            if gHist(i) >= orientationThreshold
+                            if gHist(i) > orientationThreshold
                                 % TODO: Interpolation for X and Y value to get
                                 % subpixel accuracy.
                                 % TODO: Right now the center of bin is chosen as
                                 % orientation, this can be inmroved by interpolation.
                                 Px = x*2^(o-1); % x coordinate
                                 Py = y*2^(o-1); % y coordinate
-                                Po = i+5; % Center of bin
-                                Pr = gHist(i)*2^(o-1); % Size scales by number of octave
+                                Po = i*10-5; % Center of bin
+                                Pr = gHist(i); % Size scales by number of octave
                                 P = [P,Px,Py,Po,Pr];
                             end
                         end
