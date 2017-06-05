@@ -1,4 +1,4 @@
-function P = SIFT(inputImage, Octaves, Scales, Sigma)
+function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
 % This function is to extract sift features from a given image
     
     %% Setting Variables.
@@ -6,7 +6,6 @@ function P = SIFT(inputImage, Octaves, Scales, Sigma)
     Sigmas = sigmas(Octaves,Scales,Sigma);
     ContrastThreshhold = 7.68;
     rCurvature = 10;
-    OrientationCalculationRadius = 10;
     G = cell(1,Octaves); % Gaussians
     D = cell(1,Octaves); % DoG
     P = []; % Key Points
@@ -110,6 +109,9 @@ function P = SIFT(inputImage, Octaves, Scales, Sigma)
             end
         end
     end
+    
+    %% Creating virtual presentation of Key Points
+    Image = outputImage(OriginalImage,P);
 end
 
 %% Function to extract Sigma values
@@ -152,4 +154,22 @@ function result = gaussianKernel(SD, Radius)
     end
     result = exp(-(result .^ 2) / (2 * SD * SD));
     result = result / sum(result(:));
+end
+
+%% Creating image to be returned in output
+function image = outputImage(OriginalImage, KeyPoints)
+    image = cat(3, OriginalImage, OriginalImage, OriginalImage);
+    for i=1:4:length(KeyPoints)
+        % adding circles to key point locations
+        image = insertShape(image,'circle',[KeyPoints(i+1),KeyPoints(i),5],'LineWidth',1,'color',[255,0,0],'SmoothEdges',false);
+    end
+    for i=1:4:length(KeyPoints)
+        % adding lines to key point locations
+        image = insertShape(image,'line',[KeyPoints(i+1),KeyPoints(i),KeyPoints(i+1)+10*sind(KeyPoints(i+2)),KeyPoints(i)+10*cosd(KeyPoints(i+2))],'LineWidth',1,'color',[0,0,255]);
+    end
+    for i=1:4:length(KeyPoints)
+        % Distinguishing key point location with green dots
+        image(KeyPoints(i),KeyPoints(i+1),:) = [0,255,0];
+    end
+    image = uint8(image);
 end
