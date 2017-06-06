@@ -8,10 +8,12 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
     rCurvature = 10;
     G = cell(1,Octaves); % Gaussians
     D = cell(1,Octaves); % DoG
+    GO = cell(1,Octaves); % Gradient Orientation
+    GM = cell(1,Octaves); % Gradient Scale
     P = []; % Key Points
 
     %% Calculating Gaussians
-    for o=1:Octaves
+    for o = 1:Octaves
         [row,col] = size(inputImage);
         temp = zeros([row,col,Scales]);
         for s=1:Scales
@@ -31,11 +33,26 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
         end
         D(o) = {temp};
     end
+    
+    %% Calculating orientation of gradient in each scale
+    for o = 1:Octaves
+        images = cell2mat(G(o));
+        [row,col,Scales] = size(images);
+        tempO = zeros([row,col,Scales]);
+        tempM = zeros([row,col,Scales]);
+        for s = 1:Scales
+            [tempM(:,:,s),tempO(:,:,s)] = imgradient(images(:,:,s));
+        end
+        GO(o) = {tempO};
+        GM(o) = {tempM};
+    end
 
     %% Extracting Key Points
     for o=1:Octaves
         images = cell2mat(D(o));
         gaussians = cell2mat(G(o));
+        GradientOrientations = cell2mat(G(o));
+        GradientMagnitute = cell2mat(G(o));
         [row,col,Scales] = size(images);
         for s=2:Scales-1
             for y=2:col-1
