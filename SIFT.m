@@ -89,27 +89,43 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                                 gHist(bin) =+ tempMagnitute*weights(i,j);
                             end
                         end
-                        %% Choosing keypoint
+                        %% Extracting keypoint coordinates
+                        % TODO: Interpolation for X and Y value to get
+                        % subpixel accuracy.
+                        Px = x*2^(o-1); % x coordinate
+                        Py = y*2^(o-1); % y coordinate
+                        %% Extracting keypoint orientation
                         orientationThreshold = max(gHist(:))*4/5;
+                        tempP = [];
                         for i=1:length(gHist)
                             if gHist(i) > orientationThreshold
-                                % TODO: Interpolation for X and Y value to get
-                                % subpixel accuracy.
-                                % TODO: Right now the center of bin is chosen as
-                                % orientation, this can be inmroved by interpolation.
-                                Px = x*2^(o-1); % x coordinate
-                                Py = y*2^(o-1); % y coordinate
-                                Po = i*10-5; % Center of bin
-                                Pr = gHist(i); % Size scales by number of octave
-                                P = [P,Px,Py,Po,Pr];
+                                if i-1 <= 0
+                                    X = 1:3;
+                                    Y = gHist([36,1,2]);
+                                elseif i+1 > 36
+                                    X = 34:36;
+                                    Y = gHist([35,36,1]);
+                                else
+                                    X = i-1:i+1;
+                                    Y = gHist(i-1:i+1);
+                                end
+                                Po = interpolateExterma([X(1),Y(1)],[X(2),Y(2)],[X(3),Y(3)])*10; % Orientation
+                                Pr = gHist(i); % Size
+                                if ismember(Po,tempP(3:4:end)) == false
+                                    tempP = [tempP,Px,Py,Po,Pr];
+                                end
                             end
                         end
+                        P = [P,tempP];
                     end
                 end
             end
         end
     end
     
+    %% Creating feature Descriptors
+    % TODO: Extract Descriptors
+
     %% Creating virtual presentation of Key Points
     Image = outputImage(OriginalImage,P);
 end
@@ -172,4 +188,13 @@ function image = outputImage(OriginalImage, KeyPoints)
         image(KeyPoints(i),KeyPoints(i+1),:) = [0,255,0];
     end
     image = uint8(image);
+end
+
+%% Interpolation - Fiting a parabola into 3 points and extracting more exact Exterma
+function exterma = interpolateExterma(X, Y, Z)
+% Exterpolation and Exterma extraction
+% Each input is an array with 2 values, t and f(t).
+    exterma = Y(1)+...
+        ((X(2)-Y(2))*(Z(1)-Y(1))^2 - (Z(2)-Y(2))*(Y(1)-X(1))^2)...
+        /(2*(X(2)-Y(2))*(Z(1)-Y(1)) + (Z(2)-Y(2))*(Y(1)-X(1)));
 end
