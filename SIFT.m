@@ -52,9 +52,12 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
         images = cell2mat(D(o));
         gaussians = cell2mat(G(o));
         GradientOrientations = cell2mat(G(o));
-        GradientMagnitute = cell2mat(G(o));
+        GradientMagnitutes = cell2mat(G(o));
         [row,col,Scales] = size(images);
         for s=2:Scales-1
+            % Weight for gradient vectors
+            weights = gaussianKernel(Sigmas(o,s));
+            radius = (length(weights)-1)/2;
             for y=2:col-1
                 for x=2:row-1
                     sub = images(x-1:x+1,y-1:y+1,s-1:s+1);
@@ -78,32 +81,27 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                             end
                         end
                         %% Calculating orientation and magnitute of pixels at key point vicinity
-                        % Weight for gradient vectors
-                        weights = gaussianKernel(1.5*Sigmas(o,s));
-                        radius = (length(weights)-1)/2;
-                        [wRows,wCols] = size(weights);
-                        % 36 bin histogram.
+                        % Fixing overflow key points near corners and edges
+                        % of image.
+                        a=0;b=0;c=0;d=0;
+                        if x-1-radius < 0;a = -(x-1-radius);end
+                        if y-1-radius < 0;b = -(y-1-radius);end
+                        if row-x-radius < 0;c = -(row-x-radius);end
+                        if col-y-radius < 0;d = -(col-y-radius);end
+                        tempMagnitute = GradientMagnitutes(x-radius+a:x+radius-c,y-radius+b:y+radius-d,s).*weights(1+a:end-c,1+b:end-d);
+                        tempOrientation = GradientOrientations(x-radius+a:x+radius-c,y-radius+b:y+radius-d,s);
+                        [wRows, wCols] = size(tempMagnitute);
+                        % 36 bin histogram generation.
                         gHist = zeros(1,36);
                         for i = 1:wRows
                             for j = 1:wCols
                                 % Converting orientation calculation window
-                                % coordinate to image coordinate /
-                                % translating coordinate
-                                imageX = x-radius-1+i;
-                                imageY = y-radius-1+j;
-                                % Making sure index will not fall outside
-                                % of Image
-                                if imageX <= 1 || imageX >= row
-                                    continue
+                                temp = tempOrientation(i,j);
+                                if temp < 0
+                                    temp = 360 - temp;
                                 end
-                                if imageY <= 1 || imageY >= col
-                                    continue
-                                end
-                                % Calculations and assigning bins
-                                tempOrientation = atan3d(gaussians(imageX,imageY+1,s)-gaussians(imageX,imageY-1,s), gaussians(imageX+1,imageY,s)-gaussians(imageX-1,imageY,s));
-                                tempMagnitute = ((gaussians(imageX+1,imageY,s)-gaussians(imageX-1,imageY,s))^2+(gaussians(imageX,imageY+1,s)-gaussians(imageX,imageY-1,s))^2)^0.5;
-                                bin = floor(tempOrientation/10)+1;
-                                gHist(bin) =+ tempMagnitute*weights(i,j);
+                                bin = floor(temp/10)+1;
+                                gHist(bin) = gHist(bin) + tempMagnitute(i,j);
                             end
                         end
                         %% Extracting keypoint coordinates
@@ -112,10 +110,13 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                         Px = x*2^(o-1); % x coordinate
                         Py = y*2^(o-1); % y coordinate
                         %% Extracting keypoint orientation
+                        % Marking 80% Threshold
                         orientationThreshold = max(gHist(:))*4/5;
                         tempP = [];
                         for i=1:length(gHist)
                             if gHist(i) > orientationThreshold
+                                % Connrection both ends of the histogram
+                                % for interpolation
                                 if i-1 <= 0
                                     X = 1:3;
                                     Y = gHist([36,1,2]);
@@ -126,8 +127,11 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                                     X = i-1:i+1;
                                     Y = gHist(i-1:i+1);
                                 end
+                                % interpolation of Orientation.
                                 Po = interpolateExterma([X(1),Y(1)],[X(2),Y(2)],[X(3),Y(3)])*10; % Orientation
                                 Pr = gHist(i); % Size
+                                % Filtering points with the same
+                                % orientation.
                                 if ismember(Po,tempP(3:4:end)) == false
                                     tempP = [tempP,Px,Py,Po,Pr];
                                 end
