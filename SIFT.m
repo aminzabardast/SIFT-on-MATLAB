@@ -43,6 +43,8 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
         for s = 1:Scales
             [tempM(:,:,s),tempO(:,:,s)] = imgradient(images(:,:,s));
         end
+        size(tempM)
+        size(tempO)
         GO(o) = {tempO};
         GM(o) = {tempM};
     end
@@ -50,9 +52,11 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
     %% Extracting Key Points
     for o=1:Octaves
         images = cell2mat(D(o));
-        gaussians = cell2mat(G(o));
-        GradientOrientations = cell2mat(G(o));
-        GradientMagnitutes = cell2mat(G(o));
+        GradientOrientations = cell2mat(GO(o));
+        GradientMagnitutes = cell2mat(GM(o));
+%         size(images)
+%         size(GradientOrientations)
+%         size(GradientMagnitutes)
         [row,col,Scales] = size(images);
         for s=2:Scales-1
             % Weight for gradient vectors
@@ -98,7 +102,7 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                                 % Converting orientation calculation window
                                 temp = tempOrientation(i,j);
                                 if temp < 0
-                                    temp = 360 - temp;
+                                    temp = 360 + temp;
                                 end
                                 bin = floor(temp/10)+1;
                                 gHist(bin) = gHist(bin) + tempMagnitute(i,j);
@@ -107,8 +111,6 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                         %% Extracting keypoint coordinates
                         % TODO: Interpolation for X and Y value to get
                         % subpixel accuracy.
-                        Px = x*2^(o-1); % x coordinate
-                        Py = y*2^(o-1); % y coordinate
                         %% Extracting keypoint orientation
                         % Marking 80% Threshold
                         orientationThreshold = max(gHist(:))*4/5;
@@ -128,12 +130,12 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                                     Y = gHist(i-1:i+1);
                                 end
                                 % interpolation of Orientation.
-                                Po = interpolateExterma([X(1),Y(1)],[X(2),Y(2)],[X(3),Y(3)])*10; % Orientation
-                                Pr = gHist(i); % Size
+                                dir = interpolateExterma([X(1),Y(1)],[X(2),Y(2)],[X(3),Y(3)])*10; % Orientation
+                                mag = gHist(i); % Size
                                 % Filtering points with the same
                                 % orientation.
-                                if ismember(Po,tempP(3:4:end)) == false
-                                    tempP = [tempP,Px,Py,Po,Pr];
+                                if ismember(dir,tempP(5:6:end)) == false
+                                    tempP = [tempP,x,y,o,s,dir,mag];
                                 end
                             end
                         end
@@ -143,12 +145,12 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
             end
         end
     end
-    
-    %% Creating feature Descriptors
-    % TODO: Extract Descriptors
 
     %% Creating virtual presentation of Key Points
     Image = outputImage(OriginalImage,P);
+    
+    %% Creating feature Descriptors
+    % TODO: Extract Descriptors
 end
 
 %% Function to extract Sigma values
@@ -196,17 +198,29 @@ end
 %% Creating image to be returned in output
 function image = outputImage(OriginalImage, KeyPoints)
     image = cat(3, OriginalImage, OriginalImage, OriginalImage);
-    for i=1:4:length(KeyPoints)
+    for i=1:6:length(KeyPoints)
+        x = KeyPoints(i);
+        y = KeyPoints(i+1);
+        oct = KeyPoints(i+2);
+        circle = [y*2^(oct-1),x*2^(oct-1),5];
         % adding circles to key point locations
-        image = insertShape(image,'circle',[KeyPoints(i+1),KeyPoints(i),5],'LineWidth',1,'color',[255,0,0],'SmoothEdges',false);
+        image = insertShape(image,'circle',circle,'LineWidth',1,'color',[255,0,0],'SmoothEdges',false);
     end
-    for i=1:4:length(KeyPoints)
+    for i=1:6:length(KeyPoints)
+        x = KeyPoints(i);
+        y = KeyPoints(i+1);
+        oct = KeyPoints(i+2);
+        dir = KeyPoints(i+4);
+        line = [y*2^(oct-1),x*2^(oct-1),y*2^(oct-1)+10*sind(dir),x*2^(oct-1)+10*cosd(dir)];
         % adding lines to key point locations
-        image = insertShape(image,'line',[KeyPoints(i+1),KeyPoints(i),KeyPoints(i+1)+10*sind(KeyPoints(i+2)),KeyPoints(i)+10*cosd(KeyPoints(i+2))],'LineWidth',1,'color',[0,0,255]);
+        image = insertShape(image,'line',line,'LineWidth',1,'color',[0,0,255]);
     end
-    for i=1:4:length(KeyPoints)
+    for i=1:6:length(KeyPoints)
+        x = KeyPoints(i);
+        y = KeyPoints(i+1);
+        oct = KeyPoints(i+2);
         % Distinguishing key point location with green dots
-        image(KeyPoints(i),KeyPoints(i+1),:) = [0,255,0];
+        image(x*2^(oct-1),y*2^(oct-1),:) = [0,255,0];
     end
     image = uint8(image);
 end
