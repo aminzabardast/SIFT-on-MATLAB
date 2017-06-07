@@ -120,10 +120,10 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                                 % Connrection both ends of the histogram
                                 % for interpolation
                                 if i-1 <= 0
-                                    X = 1:3;
+                                    X = 0:2;
                                     Y = gHist([36,1,2]);
                                 elseif i+1 > 36
-                                    X = 34:36;
+                                    X = 35:37;
                                     Y = gHist([35,36,1]);
                                 else
                                     X = i-1:i+1;
