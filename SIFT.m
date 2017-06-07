@@ -43,8 +43,6 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
         for s = 1:Scales
             [tempM(:,:,s),tempO(:,:,s)] = imgradient(images(:,:,s));
         end
-        size(tempM)
-        size(tempO)
         GO(o) = {tempO};
         GM(o) = {tempM};
     end
@@ -54,9 +52,6 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
         images = cell2mat(D(o));
         GradientOrientations = cell2mat(GO(o));
         GradientMagnitutes = cell2mat(GM(o));
-%         size(images)
-%         size(GradientOrientations)
-%         size(GradientMagnitutes)
         [row,col,Scales] = size(images);
         for s=2:Scales-1
             % Weight for gradient vectors
