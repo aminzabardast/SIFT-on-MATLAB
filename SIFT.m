@@ -182,17 +182,13 @@ function [Descriptors, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
                 descriptor = [descriptor, hist];
             end
         end
-        norm(descriptor,2)
         descriptor = descriptor ./ norm(descriptor,2);
-        norm(descriptor,2)
         for j =1:128
             if descriptor(j) > 0.2
                 descriptor(j) = 0.2;
             end
         end
-        norm(descriptor,2)
         descriptor = descriptor ./ norm(descriptor,2);
-        norm(descriptor,2)
         Descriptors = [Descriptors, descriptor];
     end
 end
