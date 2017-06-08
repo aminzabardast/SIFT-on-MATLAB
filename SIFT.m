@@ -1,4 +1,4 @@
-function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
+function [Descriptors, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
 % This function is to extract sift features from a given image
     
     %% Setting Variables.
@@ -11,6 +11,7 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
     GO = cell(1,Octaves); % Gradient Orientation
     GM = cell(1,Octaves); % Gradient Scale
     P = []; % Key Points
+    Descriptors = [];
 
     %% Calculating Gaussians
     for o = 1:Octaves
@@ -57,8 +58,8 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
             % Weight for gradient vectors
             weights = gaussianKernel(Sigmas(o,s));
             radius = (length(weights)-1)/2;
-            for y=2:col-1
-                for x=2:row-1
+            for y=9:col-7
+                for x=9:row-7
                     sub = images(x-1:x+1,y-1:y+1,s-1:s+1);
                     if sub(2,2,2) > max([sub(1:13),sub(15:end)]) || sub(2,2,2) < min([sub(1:13),sub(15:end)])
                         % Getting rid of bad Key Points
@@ -146,6 +147,54 @@ function [P, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
     
     %% Creating feature Descriptors
     % TODO: Extract Descriptors
+    weights = gaussianKernel(Sigmas(o,s),8);
+    weights = weights(1:end-1,1:end-1);
+    for i = 1:6:length(P)
+        x = P(i);
+        y = P(i+1);
+        oct = P(i+2);
+        scl = P(i+3);
+        dir = P(i+4);
+%         mag = P(i+5);
+        directions = cell2mat(GO(oct));
+        directions = directions(x-8:x+7,y-8:y+7,scl);
+        magnitutes = cell2mat(GM(oct));
+        magnitutes = magnitutes(x-8:x+7,y-8:y+7,scl).*weights;
+        descriptor = [];
+        for m = 1:4:13
+            for n = 1:4:13
+                hist = zeros(1,8);
+                for o = 0:3
+                    for p = 0:3
+                        localDir = directions(m+o,n+p);
+                        % Rotationg all local directions in amount of
+                        % global direction.
+                        localDir = localDir-dir;
+                        if localDir < -180
+                           localDir = 360+localDir;
+                        elseif localDir > 180
+                            localDir = -360-localDir; 
+                        end
+                        % Creating 8 bin histogram.
+                        hist(categorizeDirection8(localDir))=magnitutes(m+o,n+p);
+                    end
+                end
+                descriptor = [descriptor, hist];
+            end
+        end
+        norm(descriptor,2)
+        descriptor = descriptor ./ norm(descriptor,2);
+        norm(descriptor,2)
+        for j =1:128
+            if descriptor(j) > 0.2
+                descriptor(j) = 0.2;
+            end
+        end
+        norm(descriptor,2)
+        descriptor = descriptor ./ norm(descriptor,2);
+        norm(descriptor,2)
+        Descriptors = [Descriptors, descriptor];
+    end
 end
 
 %% Function to extract Sigma values
@@ -227,4 +276,26 @@ function exterma = interpolateExterma(X, Y, Z)
     exterma = Y(1)+...
         ((X(2)-Y(2))*(Z(1)-Y(1))^2 - (Z(2)-Y(2))*(Y(1)-X(1))^2)...
         /(2*(X(2)-Y(2))*(Z(1)-Y(1)) + (Z(2)-Y(2))*(Y(1)-X(1)));
+end
+
+%% Function to assign bins to orientations
+% 8 bin assignment
+function bin = categorizeDirection8(Direction)
+    if Direction <= 22.5 && Direction > -22.5
+        bin = 1;
+    elseif Direction <= 67.5 && Direction > 22.5
+        bin = 2;
+    elseif Direction <= 112.5 && Direction > 67.5
+        bin = 3;
+    elseif Direction <= 157.5 && Direction > 112.5
+        bin = 4;
+    elseif Direction <= -157.5 || Direction > 157.5
+        bin = 5;
+    elseif Direction <= -112.5 && Direction > -157.5
+        bin = 6;
+    elseif Direction <= -67.5 && Direction > -112.5
+        bin = 7;
+    elseif Direction <= -22.5 && Direction > -67.5
+        bin = 8;
+    end
 end
