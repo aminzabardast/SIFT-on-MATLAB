@@ -1,5 +1,5 @@
 classdef KeyPoint
-    %KeyPoint extracted using SIFT
+    %KeyPoint extracted using SIFT.
     
     properties
         Coordinates = []
@@ -11,9 +11,10 @@ classdef KeyPoint
     end
     
     methods
-        function co = coordinates(obj)
+        function [x,y] = coordinates(obj)
             % Returns Coordinates
-            co = obj.Coordinates;
+            x = obj.Coordinates(1);
+            y = obj.Coordinates(2);
         end
         function co = magnitute(obj)
             % Returns Magnitute
@@ -36,6 +37,4 @@ classdef KeyPoint
             co = obj.Scale;
         end
     end
-    
 end
-
