@@ -1,8 +1,7 @@
-function [Descriptors, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
+function Descriptors = SIFT(inputImage, Octaves, Scales, Sigma)
 % This function is to extract sift features from a given image
     
     %% Setting Variables.
-    OriginalImage = inputImage;
     Sigmas = sigmas(Octaves,Scales,Sigma);
     ContrastThreshhold = 7.68;
     rCurvature = 10;
@@ -10,13 +9,13 @@ function [Descriptors, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
     D = cell(1,Octaves); % DoG
     GO = cell(1,Octaves); % Gradient Orientation
     GM = cell(1,Octaves); % Gradient Scale
-    P = []; % Key Points
-    Descriptors = [];
+    P = [];
+    Descriptors = {}; % Key Points
 
     %% Calculating Gaussians
     for o = 1:Octaves
         [row,col] = size(inputImage);
-        temp = zeros([row,col,Scales]);
+        temp = zeros(row,col,Scales);
         for s=1:Scales
             temp(:,:,s) = imgaussfilt(inputImage,Sigmas(o,s));
         end
@@ -141,9 +140,6 @@ function [Descriptors, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
             end
         end
     end
-
-    %% Creating virtual presentation of Key Points
-    Image = outputImage(OriginalImage,P);
     
     %% Creating feature Descriptors
     % TODO: Extract Descriptors
@@ -190,14 +186,14 @@ function [Descriptors, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
         end
         descriptor = descriptor ./ norm(descriptor,2);
         % Creating keypoint object
-        keypoint = KeyPoint;
-        keypoint.Coordinats = [x,y];
-        keypoint.Magnitute = mag;
-        keypoint.Direction = dir;
-        keypoint.Descriptor = descriptor;
-        keypoint.Octave = oct;
-        keypoint.Scale = scl;
-        Descriptors = [Descriptors, keypoint];
+        kp = KeyPoint;
+        kp.Coordinates = [x*2^(oct-1),y*2^(oct-1)];
+        kp.Magnitute = mag;
+        kp.Direction = dir;
+        kp.Descriptor = descriptor;
+        kp.Octave = oct;
+        kp.Scale = scl;
+        Descriptors(end+1) = {kp};
     end
 end
 
@@ -210,16 +206,6 @@ function matrix = sigmas(octave,scale,sigma)
         for j=1:scale
             matrix(i,j) = i*k^(j-1)*sigma;
         end
-    end
-end
-
-%% Calculating Arc Tan from 0 to 360
-function v = atan3d(y,x)
-% New Atan function to return orientation in between 0 to 360
-% atan2d function will bring the result in between -180 and 180
-    v=atan2d(y,x);
-    if v < 0
-        v = 360 + v;
     end
 end
 
@@ -241,36 +227,6 @@ function result = gaussianKernel(SD, Radius)
     end
     result = exp(-(result .^ 2) / (2 * SD * SD));
     result = result / sum(result(:));
-end
-
-%% Creating image to be returned in output
-function image = outputImage(OriginalImage, KeyPoints)
-    image = cat(3, OriginalImage, OriginalImage, OriginalImage);
-    for i=1:6:length(KeyPoints)
-        x = KeyPoints(i);
-        y = KeyPoints(i+1);
-        oct = KeyPoints(i+2);
-        circle = [y*2^(oct-1),x*2^(oct-1),5];
-        % adding circles to key point locations
-        image = insertShape(image,'circle',circle,'LineWidth',1,'color',[255,0,0],'SmoothEdges',false);
-    end
-    for i=1:6:length(KeyPoints)
-        x = KeyPoints(i);
-        y = KeyPoints(i+1);
-        oct = KeyPoints(i+2);
-        dir = KeyPoints(i+4);
-        line = [y*2^(oct-1),x*2^(oct-1),y*2^(oct-1)+10*sind(dir),x*2^(oct-1)+10*cosd(dir)];
-        % adding lines to key point locations
-        image = insertShape(image,'line',line,'LineWidth',1,'color',[0,0,255]);
-    end
-    for i=1:6:length(KeyPoints)
-        x = KeyPoints(i);
-        y = KeyPoints(i+1);
-        oct = KeyPoints(i+2);
-        % Distinguishing key point location with green dots
-        image(x*2^(oct-1),y*2^(oct-1),:) = [0,255,0];
-    end
-    image = uint8(image);
 end
 
 %% Interpolation - Fiting a parabola into 3 points and extracting more exact Exterma
