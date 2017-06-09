@@ -155,7 +155,7 @@ function [Descriptors, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
         oct = P(i+2);
         scl = P(i+3);
         dir = P(i+4);
-%         mag = P(i+5);
+        mag = P(i+5);
         directions = cell2mat(GO(oct));
         directions = directions(x-8:x+7,y-8:y+7,scl);
         magnitutes = cell2mat(GM(oct));
@@ -189,7 +189,15 @@ function [Descriptors, Image] = SIFT(inputImage, Octaves, Scales, Sigma)
             end
         end
         descriptor = descriptor ./ norm(descriptor,2);
-        Descriptors = [Descriptors, descriptor];
+        % Creating keypoint object
+        keypoint = KeyPoint;
+        keypoint.Coordinats = [x,y];
+        keypoint.Magnitute = mag;
+        keypoint.Direction = dir;
+        keypoint.Descriptor = descriptor;
+        keypoint.Octave = oct;
+        keypoint.Scale = scl;
+        Descriptors = [Descriptors, keypoint];
     end
 end
 
