@@ -1,8 +1,9 @@
 clear;
 clc;
-original = imread('images/audreyhepburn.png');
-image = rgb2gray(original);
+image = imread('images/audreyhepburn.png');
+image = rgb2gray(image);
 image = double(image);
-[keyPoints, image] = SIFT(image,3,5,1.6);
+keyPoints = SIFT(image,3,5,1.3);
+image = SIFTKeypointVisualizer(image,keyPoints);
 figure
-imshow(image)
+imshow(uint8(image))
