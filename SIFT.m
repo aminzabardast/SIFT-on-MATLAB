@@ -57,8 +57,8 @@ function Descriptors = SIFT(inputImage, Octaves, Scales, Sigma)
             % Weight for gradient vectors
             weights = gaussianKernel(Sigmas(o,s));
             radius = (length(weights)-1)/2;
-            for y=9:col-7
-                for x=9:row-7
+            for y=14:col-12
+                for x=14:row-12
                     sub = images(x-1:x+1,y-1:y+1,s-1:s+1);
                     if sub(2,2,2) > max([sub(1:13),sub(15:end)]) || sub(2,2,2) < min([sub(1:13),sub(15:end)])
                         % Getting rid of bad Key Points
@@ -143,7 +143,7 @@ function Descriptors = SIFT(inputImage, Octaves, Scales, Sigma)
     
     %% Creating feature Descriptors
     % TODO: Extract Descriptors
-    weights = gaussianKernel(Sigmas(o,s),8);
+    weights = gaussianKernel(Sigmas(o,s),13);
     weights = weights(1:end-1,1:end-1);
     for i = 1:6:length(P)
         x = P(i);
@@ -153,26 +153,18 @@ function Descriptors = SIFT(inputImage, Octaves, Scales, Sigma)
         dir = P(i+4);
         mag = P(i+5);
         directions = cell2mat(GO(oct));
-        directions = directions(x-8:x+7,y-8:y+7,scl);
+        directions = directions(x-13:x+12,y-13:y+12,scl);
         magnitutes = cell2mat(GM(oct));
-        magnitutes = magnitutes(x-8:x+7,y-8:y+7,scl).*weights;
+        magnitutes = magnitutes(x-13:x+12,y-13:y+12,scl).*weights;
         descriptor = [];
-        for m = 1:4:13
-            for n = 1:4:13
+        for m = 5:4:20
+            for n = 5:4:20
                 hist = zeros(1,8);
                 for o = 0:3
                     for p = 0:3
-                        localDir = directions(m+o,n+p);
-                        % Rotationg all local directions in amount of
-                        % global direction.
-                        localDir = localDir-dir;
-                        if localDir < -180
-                           localDir = 360+localDir;
-                        elseif localDir > 180
-                            localDir = -360-localDir; 
-                        end
+                        [newx,newy] = rotateCoordinates(m+o,n+p,13,13,-dir);
                         % Creating 8 bin histogram.
-                        hist(categorizeDirection8(localDir))=magnitutes(m+o,n+p);
+                        hist(categorizeDirection8(directions(newx,newy))) = magnitutes(newx,newy);
                     end
                 end
                 descriptor = [descriptor, hist];
@@ -258,4 +250,15 @@ function bin = categorizeDirection8(Direction)
     elseif Direction <= -22.5 && Direction > -67.5
         bin = 8;
     end
+end
+
+%% Rotating coordinates
+function [x,y] =  rotateCoordinates(x, y, originx, originy, dir)
+% Rotating a pixel around an origins
+    p = [x,y,1]';
+    translate = [1,0,-originx;0,1,-originy;0,0,1];
+    rotate = [cosd(dir),-sind(dir),0;sind(dir),cosd(dir),0;0,0,1];
+    translateBack = [1,0,originx;0,1,originy;0,0,1];
+    p = translateBack*rotate*translate*p;
+    x = floor(p(1));y = floor(p(2));
 end
