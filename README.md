@@ -2,6 +2,7 @@
 This is an implementation of if [Distinctive image features from scale-invariant keypoints](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=8vs5HGYAAAAJ&citation_for_view=8vs5HGYAAAAJ:u_35RYKgDlwC) by [David Lowe](https://scholar.google.com/citations?user=8vs5HGYAAAAJ) for "Advanced Topics in Medical Image Analysis" course.
 # Usage
 Read an image in Matlab and convert it into gray scale image then use it as input for `SIFT` function.
+- `SIFT(Image, Octaves, Scales, Sigma):` Main function takes **gray scale image**, **number of octaves**, **number of scales per octaves** and **initial value for sigma**. Returns key points inside a cell array.
 
 Example:
 ```
