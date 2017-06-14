@@ -3,7 +3,7 @@ classdef KeyPoint
     
     properties
         Coordinates = []
-        Magnitute
+        Magnitude
         Direction
         Descriptor
         Octave
@@ -16,9 +16,9 @@ classdef KeyPoint
             x = obj.Coordinates(1);
             y = obj.Coordinates(2);
         end
-        function co = magnitute(obj)
-            % Returns Magnitute
-            co = obj.Magnitute;
+        function co = magnitude(obj)
+            % Returns Magnitude
+            co = obj.Magnitude;
         end
         function co = direction(obj)
             % Returns direction
