@@ -33,6 +33,4 @@ imshow(uint8(image));
 All the rights to **"Distinctive image features from scale-invariant keypoints"** are reserved for **[University of British Columbia](http://www.cs.ubc.ca/~lowe/keypoints/)**. *A license must be obtained from the University of British Columbia for any commercial applications.*
 
 # Contact
-Contact following emails for further information. 
-[zabardast.amin@metu.edu.tr](mailto:zabardast.amin@metu.edu.tr)
-[kilic.ozkan@metu.edu.tr](mailto:kilic.ozkan@metu.edu.tr)
+For further information please contact [zabardast.amin@metu.edu.tr](mailto:zabardast.amin@metu.edu.tr) or [kilic.ozkan@metu.edu.tr](mailto:kilic.ozkan@metu.edu.tr).
