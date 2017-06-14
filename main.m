@@ -1,9 +1,8 @@
 clear;
 clc;
-image = imread('images/audreyhepburn.png');
+image = imread('images/audrydiff.jpg');
 image = rgb2gray(image);
 image = double(image);
-keyPoints = SIFT(image,3,5,1.3);
+keyPoints = SIFT(image,7,5,1.3);
 image = SIFTKeypointVisualizer(image,keyPoints);
-figure
-imshow(uint8(image))
+imwrite(uint8(image),'~/Desktop/ABC/ahdiff.png')
