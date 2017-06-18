@@ -10,16 +10,13 @@ image = imread('image.jpg');
 image = double(rgb2gray(image));
 keyPoints = SIFT(image,3,5,1.6);
 ```
-
 Key points created in the process are objects. All of the key points are returned in a cell array. Each key point contains:
-
 - `coordinates():`returns **[x, y]** coordinate of the key point on image.
 - `direction():`Returns general Direction of the key point.
 - `magnitude():`Returns the magnitude of general direction vector.
 - `octave():`Returns number of the octave which the key point extracted from.
 - `scale():` Returns sigma value which the image is convolved with.
 - `descriptor():`Returns a vector containing the descriptor.
- 
 # Image Visualizer
 This function's main purpose is to illustrate the keypoints on the image. The function `SIFTKeypointVisualizer` will be called after extracting keypoints.
 
@@ -28,9 +25,9 @@ Example:
 image = SIFTKeypointVisualizer(image,keyPoints);
 imshow(uint8(image));
 ```
-
+# Dependencies
+This code is dependent on some functions within `Image Processing Toolbox` of matlab.
 # Disclaimer
 All the rights to **"Distinctive image features from scale-invariant keypoints"** are reserved for **[University of British Columbia](http://www.cs.ubc.ca/~lowe/keypoints/)**. *A license must be obtained from the University of British Columbia for any commercial applications.*
-
 # Contact
 For further information please contact [zabardast.amin@metu.edu.tr](mailto:zabardast.amin@metu.edu.tr) or [kilic.ozkan@metu.edu.tr](mailto:kilic.ozkan@metu.edu.tr).
