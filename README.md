@@ -27,6 +27,7 @@ imshow(uint8(image));
 ```
 # Dependencies
 This code is dependent on some functions within `Image Processing Toolbox` version `9.2`.
+
 This code should be compatible with any MatLab newer than `R2015a`.
 
 # Disclaimer
