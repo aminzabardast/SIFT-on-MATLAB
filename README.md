@@ -35,7 +35,7 @@ All the rights to **"Distinctive image features from scale-invariant keypoints"*
 
 ## 2023-09-09 Update to the Disclaimer
 
-[The patent](https://patents.google.com/patent/US6711293B1/en) is - possibily - expired on **6th of March, 2020** and is public knowledge now.
+[The patent](https://patents.google.com/patent/US6711293B1/en) is - possibly - expired on **March 6, 2020**, and the algorithm is public knowledge now.
 
 # Contact
 For further information please contact [zabardast.amin@metu.edu.tr](mailto:zabardast.amin@metu.edu.tr) or [kilic.ozkan@metu.edu.tr](mailto:kilic.ozkan@metu.edu.tr).
