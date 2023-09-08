@@ -32,5 +32,10 @@ This code should be compatible with any MatLab newer than `R2015a`.
 
 # Disclaimer
 All the rights to **"Distinctive image features from scale-invariant keypoints"** are reserved for **[University of British Columbia](http://www.cs.ubc.ca/~lowe/keypoints/)**. *A license must be obtained from the University of British Columbia for any commercial applications.*
+
+## 2023-09-09 Update to the Disclaimer
+
+[The patent](https://patents.google.com/patent/US6711293B1/en) is - possibily - expired on **6th of March, 2020** and is public knowledge now.
+
 # Contact
 For further information please contact [zabardast.amin@metu.edu.tr](mailto:zabardast.amin@metu.edu.tr) or [kilic.ozkan@metu.edu.tr](mailto:kilic.ozkan@metu.edu.tr).
